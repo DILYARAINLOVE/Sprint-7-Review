@@ -1,8 +1,8 @@
+import allure
 import requests
 import random
 import string
-
-BASE_URL = 'https://qa-scooter.praktikum-services.ru'
+from constants import BASE_URL, COURIER_CREATE, COURIER_LOGIN, COURIER_DELETE
 
 def generate_random_string(length):
     """Генерирует случайную строку из строчных букв"""
@@ -10,39 +10,47 @@ def generate_random_string(length):
     random_string = ''.join(random.choice(letters) for i in range(length))
     return random_string
 
-def register_new_courier_and_return_login_password():
-    """Регистрирует нового курьера и возвращает его данные"""
-    login_pass = []
-    
-    login = generate_random_string(10)
-    password = generate_random_string(10)
-    first_name = generate_random_string(10)
-    
-    payload = {
-        "login": login,
-        "password": password,
-        "firstName": first_name
+def generate_courier_payload():
+    """Генерирует payload для создания курьера"""
+    return {
+        "login": generate_random_string(10),
+        "password": generate_random_string(10),
+        "firstName": generate_random_string(10)
     }
-    
-    response = requests.post(f'{BASE_URL}/api/v1/courier', data=payload)
-    
-    if response.status_code == 201:
-        login_pass.append(login)
-        login_pass.append(password)
-        login_pass.append(first_name)
-    
-    return login_pass
 
+@allure.step('Создание курьера')
+def create_courier(payload):
+    """Создает нового курьера"""
+    response = requests.post(f'{BASE_URL}{COURIER_CREATE}', data=payload)
+    return response
+
+@allure.step('Логин курьера')
 def login_courier(login, password):
-    """Авторизует курьера и возвращает ответ"""
+    """Авторизует курьера"""
     payload = {
         "login": login,
         "password": password
     }
-    response = requests.post(f'{BASE_URL}/api/v1/courier/login', data=payload)
+    response = requests.post(f'{BASE_URL}{COURIER_LOGIN}', data=payload)
     return response
 
+@allure.step('Удаление курьера')
 def delete_courier(courier_id):
     """Удаляет курьера по ID"""
-    response = requests.delete(f'{BASE_URL}/api/v1/courier/{courier_id}')
+    response = requests.delete(f'{BASE_URL}{COURIER_DELETE.format(courier_id=courier_id)}')
     return response
+
+@allure.step('Регистрация нового курьера для тестов')
+def register_new_courier():
+    """Создает курьера и возвращает его данные"""
+    payload = generate_courier_payload()
+    response = create_courier(payload)
+    
+    if response.status_code == 201:
+        return {
+            "login": payload["login"],
+            "password": payload["password"],
+            "first_name": payload["firstName"],
+            "payload": payload
+        }
+    return None
