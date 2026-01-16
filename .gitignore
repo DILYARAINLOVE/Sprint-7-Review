@@ -10,12 +10,14 @@ env/
 *.swp
 *.swo
 
-# Python
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+# Build and distribution
 build/
 develop-eggs/
 dist/
@@ -39,8 +41,15 @@ htmlcov/
 
 # Allure
 allure-report/
-target/
+target/allure-results/*.png
+target/allure-results/*.txt
+target/allure-results/*.log
+target/allure-results/*.attach
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Project specific
+tests/__pycache__/
+__pycache__/
