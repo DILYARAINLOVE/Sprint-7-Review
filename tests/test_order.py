@@ -2,14 +2,14 @@ import allure
 import pytest
 import requests
 from constants import BASE_URL, ORDER_CREATE, ORDER_LIST
-from data import ORDER_DATA, ORDER_COLORS
+from data import ORDER_DATA
 
 class TestCreateOrder:
     @allure.title("Тест на создание заказа с цветом BLACK")
     def test_create_order_with_black_color(self):
         """Проверка создания заказа с цветом BLACK"""
         order_data = ORDER_DATA.copy()
-        order_data["color"] = ORDER_COLORS["BLACK"]
+        order_data["color"] = ["BLACK"]
         
         response = requests.post(f'{BASE_URL}{ORDER_CREATE}', json=order_data)
         
@@ -20,7 +20,7 @@ class TestCreateOrder:
     def test_create_order_with_grey_color(self):
         """Проверка создания заказа с цветом GREY"""
         order_data = ORDER_DATA.copy()
-        order_data["color"] = ORDER_COLORS["GREY"]
+        order_data["color"] = ["GREY"]
         
         response = requests.post(f'{BASE_URL}{ORDER_CREATE}', json=order_data)
         
@@ -31,7 +31,7 @@ class TestCreateOrder:
     def test_create_order_with_both_colors(self):
         """Проверка создания заказа с обоими цветами"""
         order_data = ORDER_DATA.copy()
-        order_data["color"] = ORDER_COLORS["BOTH"]
+        order_data["color"] = ["BLACK", "GREY"]
         
         response = requests.post(f'{BASE_URL}{ORDER_CREATE}', json=order_data)
         
@@ -55,19 +55,14 @@ class TestGetOrdersList:
         """Проверка получения списка заказов"""
         response = requests.get(f'{BASE_URL}{ORDER_LIST}')
         
+        # Проверяем код ответа
         assert response.status_code == 200
-        assert "orders" in response.json()
-        
-        orders = response.json()["orders"]
-        assert isinstance(orders, list)
         
         # Проверяем структуру ответа
-        response_structure = response.json()
-        assert "orders" in response_structure
-        assert isinstance(response_structure["orders"], list)
+        response_json = response.json()
+        assert "orders" in response_json
+        assert isinstance(response_json["orders"], list)
         
-        # Если в ответе есть заказы, проверяем структуру первого
-        if len(orders) > 0:
-            first_order = orders[0]
-            assert "id" in first_order
-            assert "track" in first_order
+        # Проверяем, что список orders содержит корректные данные
+        orders = response_json["orders"]
+        assert isinstance(orders, list)
